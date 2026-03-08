@@ -49,27 +49,25 @@ logoutBtn.addEventListener('click', () => {
 
 // --- API FETCHING ---
 async function fetchIssues() {
-    showLoader();
+    showMainLoader();
     try {
         const response = await fetch(`${API_BASE_URL}/issues`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         const data = await response.json();
-        
-        // Safely extract the array whether the API returns a direct array or wraps it in an object
         allIssues = Array.isArray(data) ? data : (data.data || data.issues || []);
         
         filterAndRenderIssues();
     } catch (error) {
         console.error('Fetch error:', error);
-        issuesGrid.innerHTML = `<p class="text-red-500 col-span-full text-center py-8 font-bold">Failed to load issues. Please ensure you are running this on a local server (like Live Server) and not directly from the file system.</p>`;
+        issuesGrid.innerHTML = `<p class="text-red-500 col-span-full text-center py-8 font-bold">Failed to load issues. Please ensure you are running this on a local server (like Live Server).</p>`;
     } finally {
-        hideLoader();
+        hideMainLoader();
     }
 }
 
 async function searchIssues(query) {
-    showLoader();
+    showMainLoader();
     try {
         const response = await fetch(`${API_BASE_URL}/issues/search?q=${encodeURIComponent(query)}`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -83,7 +81,7 @@ async function searchIssues(query) {
         console.error('Search error:', error);
         issuesGrid.innerHTML = `<p class="text-red-500 col-span-full text-center py-8 font-bold">Failed to search issues.</p>`;
     } finally {
-        hideLoader();
+        hideMainLoader();
     }
 }
 
@@ -105,7 +103,7 @@ searchInput.addEventListener('input', (e) => {
 function changeTab(tabName, reRender = true) {
     currentCategory = tabName;
     
-    // Update Button Styles
+    // Update Button Styles (Shows Active Tab Clearly)
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('bg-primary', 'text-white', 'active');
         btn.classList.add('text-gray-600', 'bg-transparent');
@@ -114,7 +112,7 @@ function changeTab(tabName, reRender = true) {
     const activeBtn = document.getElementById(`tab-${tabName}`);
     if (activeBtn) {
         activeBtn.classList.remove('text-gray-600', 'bg-transparent');
-        activeBtn.classList.add('bg-primary', 'text-white', 'active');
+        activeBtn.classList.add('bg-primary', 'text-white', 'active'); // Highlights active tab
     }
 
     if (reRender) filterAndRenderIssues();
@@ -131,7 +129,7 @@ function filterAndRenderIssues() {
     // Update Count text
     issueCountDisplay.innerText = `${filteredIssues.length} Issues`;
 
-    issuesGrid.innerHTML = '';
+    issuesGrid.innerHTML = ''; // Only clear the grid when re-rendering tabs or loading
     
     if(filteredIssues.length === 0) {
         issuesGrid.innerHTML = `<p class="text-gray-500 col-span-full text-center py-8 font-medium">No issues found in this category.</p>`;
@@ -142,7 +140,7 @@ function filterAndRenderIssues() {
         // Handle variations in API keys safely
         const status = (issue.status || issue.state || 'open').toLowerCase();
         const isClosed = status === 'closed';
-        const borderColorClass = isClosed ? 'border-statusPurple' : 'border-success';
+        const borderColorClass = isClosed ? 'border-statusPurple' : 'border-success'; // Purple for closed, Green for open
         const statusIconPath = isClosed ? './assets/Closed- Status .png' : './assets/Open-Status.png';
         
         const dateStr = formatDate(issue.createdAt || issue.created_at || issue.date);
@@ -163,7 +161,7 @@ function filterAndRenderIssues() {
             labelsHtml += getLabelBadge(labelName);
         });
 
-        // 4-Column Layout Card (Green border for open, Purple for closed)
+        // HTML for 4 Column Layout Card
         const cardHtml = `
             <div class="issue-card bg-white rounded-lg p-5 border border-gray-200 border-t-4 ${borderColorClass} cursor-pointer flex flex-col justify-between h-full" onclick="openModal('${issue.id || issue._id || issue.number}')">
                 <div>
@@ -188,7 +186,20 @@ function filterAndRenderIssues() {
 
 // --- MODAL LOGIC ---
 async function openModal(id) {
-    showLoader();
+    // Show Modal Immediately over the background (No wiping the grid!)
+    modal.classList.remove('hidden');
+    
+    // Set Temporary Loading Text in the Modal
+    modalTitle.innerText = 'Loading Issue Details...';
+    modalDescription.innerText = 'Please wait while we fetch the details...';
+    modalStatus.innerText = 'LOADING';
+    modalStatus.className = 'px-3 py-1 rounded-full text-xs font-bold text-gray-500 bg-gray-200 uppercase tracking-wide';
+    modalAuthorDate.innerText = '';
+    modalAssignee.innerText = '...';
+    modalPriority.innerText = '...';
+    modalPriority.className = 'px-3 py-1 rounded-full text-xs font-bold text-gray-500 bg-gray-200 inline-block mt-1';
+    modalLabels.innerHTML = '';
+
     try {
         const response = await fetch(`${API_BASE_URL}/issue/${id}`);
         if(!response.ok) throw new Error("Failed to load issue info");
@@ -197,6 +208,7 @@ async function openModal(id) {
         // Extract data object safely
         const issue = issueData.data || issueData.issue || issueData;
         
+        // Populate Real Data
         const status = (issue.status || issue.state || 'open').toLowerCase();
         const isClosed = status === 'closed';
         const dateStr = formatDate(issue.createdAt || issue.created_at || issue.date);
@@ -227,12 +239,10 @@ async function openModal(id) {
         });
         modalLabels.innerHTML = labelsHtml;
 
-        modal.classList.remove('hidden');
     } catch (error) {
         console.error(error);
-        alert('Failed to fetch full issue details.');
-    } finally {
-        hideLoader();
+        modalTitle.innerText = 'Error';
+        modalDescription.innerText = 'Failed to fetch full issue details. Please check your connection.';
     }
 }
 
@@ -262,14 +272,16 @@ function getLabelBadge(labelName) {
     return `<span class="px-2 py-0.5 border rounded-full text-[10px] font-bold uppercase ${classes}">${labelName}</span>`;
 }
 
-function showLoader() {
+// Main Loader only wipes grid on initial load or category change
+function showMainLoader() {
     issuesGrid.innerHTML = '';
     loader.classList.remove('hidden');
 }
-function hideLoader() {
+function hideMainLoader() {
     loader.classList.add('hidden');
 }
 
+// Close Modal when clicking outside the box
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
 });
