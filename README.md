@@ -1,3 +1,4 @@
+# GitHub-Issues-Tracker
 Answer to the Questions
 
 ## 1️⃣ What is the difference between var, let, and const?
@@ -15,9 +16,11 @@ Answer to the Questions
 The **spread operator (...)** is used to expand elements of an array or object into another array or object.
 
 Example:
+
+```javascript
 const arr1 = [1,2,3]
 const arr2 = [...arr1,4,5]
-
+```
 
 Here the spread operator copies the elements of `arr1` into a new array.
 
@@ -39,7 +42,9 @@ An **arrow function** is a shorter way to write functions in JavaScript.
 
 Example:
 
+```javascript
 const add = (a,b) => a + b
+```
 
 It makes the code shorter and easier to read.
 
@@ -50,8 +55,12 @@ It makes the code shorter and easier to read.
 Template literals are strings written using **backticks (` `)** that allow variables to be inserted using `${}`.
 
 Example:
+
+```javascript
 const name = "John"
 const text = `Hello ${name}`
+```
+
 ---
 
 # GitHub Issues Tracker
@@ -80,5 +89,4 @@ https://phi-lab-server.vercel.app/api/v1/lab/issue/{id}
 
 Search Issue
 https://phi-lab-server.vercel.app/api/v1/lab/issues/search?q={searchText}
-
 
