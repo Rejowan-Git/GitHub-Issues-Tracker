@@ -64,9 +64,10 @@ const text = `Hello ${name}`
 ---
 
 # GitHub Issues Tracker
-Live Website Links: 
-https://github-issues-tracker-ph-assignment.netlify.app/
-https://rejowan-git.github.io/GitHub-Issues-Tracker/
+## 🌐 Live Website
+
+- 🔗 Netlify Live Site: https://github-issues-tracker-ph-assignment.netlify.app/
+- 🔗 GitHub Pages Live Site: https://rejowan-git.github.io/GitHub-Issues-Tracker/
 
 This project is a simple web application that allows users to view and manage GitHub-style issues. Users can log in using demo credentials, view issues from an API, filter them by status (All, Open, Closed), search issues, and click on a card to see detailed information in a popup modal.
 
